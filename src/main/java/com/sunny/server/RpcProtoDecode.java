@@ -38,19 +38,20 @@ public class RpcProtoDecode extends FixedLengthFrameDecoder {
 		byte[] headerData = new byte[4];
 		revBuf.readBytes(headerData);
 		String header = bytesToHexString(headerData);
-		if (logger.isInfoEnabled())
-			logger.info("begin 4 byte " + header);
+		// if (logger.isInfoEnabled())
+		// logger.info("begin 4 byte " + header);
 		if (header.equals("29298000")) {
 			GeoModel model = null;
 			byte bodyLength = revBuf.readByte();
+			// int tt = bodyLength & 0xff;
 			// if (logger.isInfoEnabled())
-			// logger.info("body length " + bodyLength);
+			// logger.info("body length " + tt);
 			bodyLength = 40;
 			// if (bodyLength < 45) {
 			byte[] bodyData = new byte[bodyLength];
 			revBuf.readBytes(bodyData);
 			int v = bodyData[bodyLength - 1] & 0xFF;
-			String hv = Integer.toHexString(v);
+			// String hv = Integer.toHexString(v);
 			// if (logger.isInfoEnabled())
 			// logger.info("end " + hv);
 			// if (hv.equals("d")) {
@@ -64,7 +65,7 @@ public class RpcProtoDecode extends FixedLengthFrameDecoder {
 			String numHeader = "";
 			for (int i = 0; i < 4; i++) {
 				int t = idData[i] & 0xff;
-				logger.info(t + "");
+				// logger.info(t + "");
 				if (t > 128) {
 					vData[i] = t - 128;
 					bin += "1";
@@ -74,7 +75,7 @@ public class RpcProtoDecode extends FixedLengthFrameDecoder {
 				}
 
 			}
-			logger.info("bin = " + bin);
+			// logger.info("bin = " + bin);
 			if (bin.equals("1100")) {
 				numHeader = "158";
 			} else if (bin.equals("1101"))
