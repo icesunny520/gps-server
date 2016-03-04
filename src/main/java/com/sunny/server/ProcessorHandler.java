@@ -52,8 +52,8 @@ public class ProcessorHandler extends ChannelInboundHandlerAdapter {
 
 	@Override
 	public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-		if (ctx.channel() != null)
-			logger.error(ctx.channel().toString() + " ", cause);
+		// if (ctx.channel() != null)
+		// logger.error(ctx.channel().toString() + " ", cause);
 	}
 
 	@Override
