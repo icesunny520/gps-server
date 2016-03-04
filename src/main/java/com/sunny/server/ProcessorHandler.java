@@ -37,9 +37,9 @@ public class ProcessorHandler extends ChannelInboundHandlerAdapter {
 
 	@Override
 	public void channelActive(ChannelHandlerContext ctx) throws Exception {
-		if (logger.isInfoEnabled()) {
-			logger.info("accept a new connection.");
-		}
+		// if (logger.isInfoEnabled()) {
+		// logger.info("accept a new connection.");
+		// }
 	}
 
 	@Override
@@ -47,8 +47,7 @@ public class ProcessorHandler extends ChannelInboundHandlerAdapter {
 		GeoModel model = (GeoModel) msg;
 		if (model == null)
 			return;
-		db.executeUpdate("REPLACE INTO bus_geo (bus,longitude,latitude,direction,hourSpeed,dateTime,timestamp) values (?,?,?,?,?,?,?)", model.getId(), model.getLongitude(), model.getLatitude(), model.getDirection(), model.getHourSpeed(), model.getDateTime(),
-				model.getTimestamp());
+		db.executeUpdate("REPLACE INTO bus_geo (bus,longitude,latitude,direction,hourSpeed,dateTime,timestamp) values (?,?,?,?,?,?,?)", model.getId(), model.getLongitude(), model.getLatitude(), model.getDirection(), model.getHourSpeed(), model.getDateTime(), model.getTimestamp());
 	}
 
 	@Override
@@ -59,11 +58,11 @@ public class ProcessorHandler extends ChannelInboundHandlerAdapter {
 
 	@Override
 	public void channelUnregistered(ChannelHandlerContext ctx) throws Exception {
-		logger.info("disconnected...");
+		// logger.info("disconnected...");
 	}
 
 	@Override
 	public void channelRegistered(ChannelHandlerContext ctx) throws Exception {
-		logger.info("connected...");
+		// logger.info("connected...");
 	}
 }
