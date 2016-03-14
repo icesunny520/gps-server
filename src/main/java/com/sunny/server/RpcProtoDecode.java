@@ -3,6 +3,7 @@ package com.sunny.server;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.FixedLengthFrameDecoder;
+import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
@@ -21,11 +22,26 @@ import org.slf4j.LoggerFactory;
  * @author TonyZhou
  *
  */
-public class RpcProtoDecode extends FixedLengthFrameDecoder {
+public class RpcProtoDecode extends LengthFieldBasedFrameDecoder {
+	/**
+	 * @param maxFrameLength
+	 * @param lengthFieldOffset
+	 * @param lengthFieldLength
+	 * @param lengthAdjustment
+	 * @param initialBytesToStrip
+	 */
+	public RpcProtoDecode(int maxFrameLength, int lengthFieldOffset, int lengthFieldLength, int lengthAdjustment, int initialBytesToStrip) {
+		super(maxFrameLength, lengthFieldOffset, lengthFieldLength, lengthAdjustment, initialBytesToStrip);
+		// TODO Auto-generated constructor stub
+	}
+
 	Logger logger = LoggerFactory.getLogger(getClass());
 
-	public RpcProtoDecode(int frameLength) {
-		super(frameLength);
+	// public RpcProtoDecode(int frameLength) {
+	// super(frameLength);
+	// }
+
+	public void printHexString() {
 	}
 
 	@Override
@@ -35,6 +51,13 @@ public class RpcProtoDecode extends FixedLengthFrameDecoder {
 			return null;
 		}
 
+		StringBuffer sb = new StringBuffer();
+		while (revBuf.isReadable()) {
+			sb.append(bytesToHexString(new byte[] { revBuf.readByte() }) + " ");
+		}
+		logger.info(sb.toString());
+		revBuf.readerIndex(0);
+
 		byte[] headerData = new byte[4];
 		revBuf.readBytes(headerData);
 		String header = bytesToHexString(headerData);
@@ -43,17 +66,12 @@ public class RpcProtoDecode extends FixedLengthFrameDecoder {
 		if (header.equals("29298000")) {
 			GeoModel model = null;
 			byte bodyLength = revBuf.readByte();
-			// int tt = bodyLength & 0xff;
+			int bl = bodyLength & 0xff;
 			// if (logger.isInfoEnabled())
-			// logger.info("body length " + tt);
-			bodyLength = 40;
+			// logger.info("body length " + tt + " total length " + revBuf.readableBytes() + " " + bytesToHexString(new byte[] { bodyLength }));
 			// if (bodyLength < 45) {
-			byte[] bodyData = new byte[bodyLength];
+			byte[] bodyData = new byte[bl];
 			revBuf.readBytes(bodyData);
-			int v = bodyData[bodyLength - 1] & 0xFF;
-			// String hv = Integer.toHexString(v);
-			// if (logger.isInfoEnabled())
-			// logger.info("end " + hv);
 			// if (hv.equals("d")) {
 			model = new GeoModel();
 			ByteBuffer body = ByteBuffer.wrap(bodyData);
@@ -105,12 +123,14 @@ public class RpcProtoDecode extends FixedLengthFrameDecoder {
 			byte[] latitudeData = new byte[4];
 			body.get(latitudeData);
 			String latitudeStr = bcd2string(latitudeData);
-			model.setLatitude(Float.valueOf(latitudeStr.substring(0, 3) + "." + latitudeStr.substring(3)));
+			model.setLatitude(getDo(latitudeStr,true));
 			// 经度
 			byte[] longitudeData = new byte[4];
 			body.get(longitudeData);
 			String longitudeStr = bcd2string(longitudeData);
-			model.setLongitude(Float.valueOf(longitudeStr.substring(0, 3) + "." + longitudeStr.substring(3)));
+			model.setLongitude(getDo(longitudeStr,false));
+			// logger.info(id + " " + bytesToHexString(longitudeData) + "," + bytesToHexString(latitudeData));
+			// logger.info(id + " " + longitudeStr + "," + latitudeStr);
 			// 速度
 			byte[] speed = new byte[2];
 			body.get(speed);
@@ -127,18 +147,54 @@ public class RpcProtoDecode extends FixedLengthFrameDecoder {
 
 	}
 
-	public String bcd2string(byte[] b) {
-		StringBuffer sb = new StringBuffer();
-		for (int i = 0; i < b.length; i++) {
-			int h = ((b[i] & 0xff) >> 4) + 48;
-			sb.append((char) h);
-			int l = (b[i] & 0x0f) + 48;
-			sb.append((char) l);
+	private String getDo(String str, boolean lat) {
+		if (lat) {
+			String n1 = str.substring(0, 3);// 截取2位，纬度共2位，最多90度
+			String n2 = str.substring(3, 5) + "." + str.substring(5);
+
+			double latresult = Double.parseDouble(n1);
+			latresult += Double.parseDouble(n2) / 60.0D;
+			String temp = String.valueOf(latresult);
+			if (temp.length() > 8) {
+				temp = n1 + temp.substring(temp.indexOf("."), 8);
+			}
+//			logger.info(temp);
+			return temp;
+		} else {
+			String e1 = str.substring(0, 3);// 截取3位数字，经度共3位，最多180度
+			// 经度是一伦敦为点作南北两极的线为0度,所有往西和往东各180度
+			String e2 = str.substring(3, 5) + "." + str.substring(5);// 需要运算的小数
+
+			double result = Double.parseDouble(e1);
+			result += (Double.parseDouble(e2) / 60.0D);
+			String temp = String.valueOf(result);
+			if (temp.length() > 9) {
+				temp = e1 + temp.substring(temp.indexOf("."), 9);
+			}
+//			logger.info(temp);
+			return temp;
 		}
-		return sb.toString();
 	}
 
-	public int bytes2Int(byte[] byteNum) {
+	public String bcd2string(byte[] bytes) {
+		// StringBuffer sb = new StringBuffer();
+		// for (int i = 0; i < b.length; i++) {
+		// int h = ((b[i] & 0xff) >> 4) + 48;
+		// sb.append((char) h);
+		// int l = (b[i] & 0x0f) + 48;
+		// sb.append((char) l);
+		// }
+		// return sb.toString();
+
+		StringBuffer temp = new StringBuffer(bytes.length * 2);
+		for (int i = 0; i < bytes.length; i++) {
+			temp.append((byte) ((bytes[i] & 0xf0) >>> 4));
+			temp.append((byte) (bytes[i] & 0x0f));
+		}
+		return temp.toString();
+	}
+
+	public static int bytes2Int(byte[] byteNum) {
 		int num = 0;
 		for (int ix = 0; ix < 4; ++ix) {
 			num <<= 8;

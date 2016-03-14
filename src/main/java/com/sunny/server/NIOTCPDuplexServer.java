@@ -70,7 +70,7 @@ public class NIOTCPDuplexServer extends TCPDuplexServer {
 					// 编码
 					// p.addLast("RequsetEncode", new RpcProtoEncode());
 					// 处理拆包，粘包，并解码
-					p.addLast("ResponseDecode", new RpcProtoDecode(45));
+					p.addLast("ResponseDecode", new RpcProtoDecode(512, 3, 2, 0, 0));
 					// 指定时间内没有发生任何读操作（包括心跳），则判定连接超时，关闭连接
 					p.addLast("ReadTimeoutHandler", new ReadTimeoutHandler(600, TimeUnit.SECONDS));
 					p.addLast("ServerHandler", new ProcessorHandler());

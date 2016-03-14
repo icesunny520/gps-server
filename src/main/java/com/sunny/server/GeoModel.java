@@ -14,8 +14,8 @@ package com.sunny.server;
 public class GeoModel {
 
 	private long id;
-	private float longitude;
-	private float latitude;
+	private String longitude;
+	private String latitude;
 	private long timestamp;
 	private String dateTime;
 	private int direction;
@@ -99,7 +99,7 @@ public class GeoModel {
 	/**
 	 * @return the longitude
 	 */
-	public float getLongitude() {
+	public String getLongitude() {
 		return longitude;
 	}
 
@@ -107,14 +107,14 @@ public class GeoModel {
 	 * @param longitude
 	 *            the longitude to set
 	 */
-	public void setLongitude(float longitude) {
+	public void setLongitude(String longitude) {
 		this.longitude = longitude;
 	}
 
 	/**
 	 * @return the latitude
 	 */
-	public float getLatitude() {
+	public String getLatitude() {
 		return latitude;
 	}
 
@@ -122,7 +122,7 @@ public class GeoModel {
 	 * @param latitude
 	 *            the latitude to set
 	 */
-	public void setLatitude(float latitude) {
+	public void setLatitude(String latitude) {
 		this.latitude = latitude;
 	}
 
